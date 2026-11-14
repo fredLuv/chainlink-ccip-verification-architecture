@@ -77,7 +77,8 @@
     .node-card.is-dimmed {
       opacity: 0.45;
     }
-    .tab-btn.is-active {
+    .tab-btn.is-active,
+    .flow-btn.is-active {
       background-color: var(--primary);
       color: var(--primary-foreground);
       border-color: var(--primary);
@@ -87,11 +88,11 @@
     }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 p-6">
-  <div class="max-w-7xl mx-auto space-y-6">
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 p-5">
+  <div class="max-w-7xl mx-auto space-y-5">
 
     <!-- Minimal Essential Header -->
-    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div class="space-y-1.5">
         <h1 class="text-2xl font-bold tracking-tight">Chainlink CCIP Architecture &amp; Interactive Code Map</h1>
         <p class="text-sm text-[var(--muted-foreground)] max-w-2xl">
@@ -115,24 +116,26 @@
 
       <!-- Left: Clickable Layered Architecture Diagram -->
       <div class="xl:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[var(--border)] pb-3">
           <div>
             <h2 class="text-base font-semibold">Interactive Cross-Chain &amp; OCR3 Topology</h2>
-            <p class="text-xs text-[var(--muted-foreground)]">Select any node to trace dependencies, read invariants, and jump to upstream code.</p>
+            <p class="text-xs text-[var(--muted-foreground)]">Trace flows by lifecycle stage or click any contract/plugin node to inspect its verified boundaries.</p>
           </div>
-          <button id="resetFilterBtn" type="button"
-                  class="text-xs px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)] shrink-0">
-            Show All Edges
-          </button>
+          <div class="flex flex-wrap items-center gap-1.5 text-xs shrink-0">
+            <button type="button" data-flow="send" class="flow-btn px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)]">Send</button>
+            <button type="button" data-flow="consensus" class="flow-btn px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)]">Consensus</button>
+            <button type="button" data-flow="execute" class="flow-btn px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)]">Execute &amp; CCVs</button>
+            <button id="resetFilterBtn" type="button" data-flow="all" class="flow-btn px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)]">All Edges</button>
+          </div>
         </div>
 
-        <div id="diagramStage" class="relative space-y-5 p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] overflow-hidden">
-          <svg id="edgeOverlay" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></svg>
+        <div id="diagramStage" class="relative space-y-4 p-4 rounded-lg bg-[var(--content)] border border-[var(--border)] overflow-hidden">
+          <svg id="edgeOverlay" class="absolute inset-0 w-full h-full pointer-events-none z-10" aria-hidden="true"></svg>
 
-          <!-- Layer 1: Source Chain Custody & Fee Quoting -->
-          <div class="relative z-10 space-y-2">
+          <!-- Layer 1: Source Chain Entry, Custody & Quoting -->
+          <div class="relative z-20 space-y-1.5">
             <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
-              1. Source Chain Entry, Custody &amp; Quoting (EVM)
+              1. Source Chain Dispatch, Custody &amp; Quoting (EVM)
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="router">
@@ -140,36 +143,36 @@
                   <span class="text-xs font-semibold">Router.sol</span>
                   <span class="text-xs px-1.5 py-0.5 rounded bg-[var(--content)] text-[var(--muted-foreground)] shrink-0">Entry</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">ccipSend &amp; dest-side routeMessage to receivers.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Outbound ccipSend &amp; dest routeMessage callback.</p>
               </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="onramp">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
                   <span class="text-xs font-semibold">OnRamp.sol</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-1)">Source</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Validates dest, merges CCVs, assigns seq &amp; messageId.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Merges CCVs, pulls fees, locks/burns &amp; emits event.</p>
               </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="pools">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
-                  <span class="text-xs font-semibold">TokenPool.sol</span>
+                  <span class="text-xs font-semibold">Admin &amp; TokenPool</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-4)">Custody</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">LockRelease, BurnMint &amp; MultiTokenPool + RateLimiter.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">TokenAdminRegistry lookup, pools &amp; rate limits.</p>
               </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="fee">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
-                  <span class="text-xs font-semibold">FeeQuoter / Exec</span>
+                  <span class="text-xs font-semibold">FeeQuoter &amp; Exec</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-3)">Billing</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Gas/token price quotes &amp; destination execution budget.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Price/gas quoting &amp; Executor CCV fee budgets.</p>
               </div>
             </div>
           </div>
 
-          <!-- Layer 2: Off-Chain OCR3 DON & Risk Management -->
-          <div class="relative z-10 space-y-2">
+          <!-- Layer 2: Off-Chain OCR3 DON, RMN Veto & Verifier Resolution -->
+          <div class="relative z-20 space-y-1.5">
             <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
-              2. Off-Chain Consensus (Go OCR3 Role DON) &amp; RMN Security
+              2. Off-Chain Role DON (Go OCR3), RMN Veto &amp; Verifier Routing
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="commit">
@@ -177,56 +180,56 @@
                   <span class="text-xs font-semibold">OCR3 Commit</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-2)">Go Plugin</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Collects messages, builds Merkle roots &amp; RMN sigs.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Builds source Merkle roots, bundles RMN sigs &amp; prices.</p>
               </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="execute">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
                   <span class="text-xs font-semibold">OCR3 Execute</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-2)">Go Plugin</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Multi-round Role DON merklemulti proofs &amp; ordering.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">3-round Role DON payloads &amp; merklemulti proofs.</p>
               </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="rmn">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
                   <span class="text-xs font-semibold">RMN &amp; RMNProxy</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--error)">Veto / Curse</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Independent blessing check &amp; global/lane circuit-breaker.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Independent blessing check &amp; global/chain curse halt.</p>
               </div>
-              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="invariants">
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="resolver">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
-                  <span class="text-xs font-semibold">Invariants Specs</span>
-                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-5)">9 Docs</span>
+                  <span class="text-xs font-semibold">VerifierResolver</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-6)">v2 Router</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Formal rules for CCVs, lanes, lifecycle &amp; pools.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Resolves outbound chain &amp; inbound bytes4 CCV impls.</p>
               </div>
             </div>
           </div>
 
           <!-- Trust & Verification Seam -->
-          <div class="relative z-10 text-center py-1.5 px-3 rounded-md border border-dashed border-[var(--border)] bg-[var(--background)] text-xs text-[var(--muted-foreground)] font-mono">
-            Pluggable Verification Seam: <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">ICrossChainVerifierV1</a> (Quorum Verified &rarr; releaseOrMint &rarr; ccipReceive)
+          <div class="relative z-20 text-center py-1.5 px-3 rounded-md border border-dashed border-[var(--border)] bg-[var(--background)] text-[11px] text-[var(--muted-foreground)] font-mono">
+            Seam: <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol#L54" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">VersionedVerifierResolver</a> &rarr; <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">ICrossChainVerifierV1</a> &rarr; releaseOrMint &rarr; ccipReceive
           </div>
 
-          <!-- Layer 3: Modular CCVs & Destination Execution -->
-          <div class="relative z-10 space-y-2">
+          <!-- Layer 3: Destination Execution & Modular CCVs -->
+          <div class="relative z-20 space-y-1.5 pb-4">
             <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
-              3. Modular Cross-Chain Verifiers (CCVs) &amp; Destination Ramp
+              3. Destination Execution &amp; Modular Verifiers (CCVs)
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div class="node-card is-selected rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="offramp">
-                <div class="flex flex-wrap items-center justify-between gap-1.5">
-                  <span class="text-xs font-semibold">OffRamp.sol</span>
-                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--success)">Dest Core</span>
-                </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Permissionless execute, CCV quorum, token release &amp; gas buffer.</p>
-              </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="committee">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
                   <span class="text-xs font-semibold">CommitteeVerifier</span>
                   <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-1)">CCV DON</span>
                 </div>
-                <p class="text-xs text-[var(--muted-foreground)] mt-1">Verifies DON signature quorum &amp; lane finality configs.</p>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Verifies DON signature quorum &amp; lane finality rules.</p>
+              </div>
+              <div class="node-card is-selected rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="offramp">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">OffRamp.sol</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--success)">Dest Core</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Permissionless execute, CCV quorum, release &amp; callback.</p>
               </div>
               <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="zk">
                 <div class="flex flex-wrap items-center justify-between gap-1.5">
@@ -243,6 +246,16 @@
                 <p class="text-xs text-[var(--muted-foreground)] mt-1">Specialized verifiers for USDC CCTP &amp; Lombard BTC.</p>
               </div>
             </div>
+          </div>
+
+          <!-- Flow Legend -->
+          <div class="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border)] text-xs text-[var(--muted-foreground)]">
+            <div class="flex flex-wrap items-center gap-4">
+              <span class="inline-flex items-center gap-1.5"><span class="inline-block w-4 h-0.5 rounded" style="background: var(--chart-1)"></span>Message / Execution</span>
+              <span class="inline-flex items-center gap-1.5"><span class="inline-block w-4 h-0.5 rounded" style="background: var(--chart-6)"></span>CCV Resolver / Quorum</span>
+              <span class="inline-flex items-center gap-1.5"><span class="inline-block w-4 border-t-2 border-dashed" style="border-color: var(--error)"></span>RMN Curse / Blessing</span>
+            </div>
+            <span id="edgeStatusNote" class="font-mono"></span>
           </div>
         </div>
       </div>
@@ -347,12 +360,15 @@
 
       <!-- Tab 4: 9 Invariant Docs -->
       <div id="tab-invariants-tab" class="tab-panel hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CONTEXT.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">CONTEXT.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Shared architectural taxonomy &amp; scope index.</p></a>
         <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">CCV_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Config deduplication, sentinels, quorum &amp; verifier rules.</p></a>
         <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/MESSAGE_LIFECYCLE_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">MESSAGE_LIFECYCLE_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Send ordering, gas budgets, retries &amp; SUCCESS semantics.</p></a>
         <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/TOKEN_POOL_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">TOKEN_POOL_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Custody conservation, rate limits &amp; pool ACLs.</p></a>
         <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FEE_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">FEE_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">FeeQuoter budgets, receipts &amp; fee distribution.</p></a>
         <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/AUTHORIZATION_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">AUTHORIZATION_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">OnRamp/OffRamp ownership &amp; RMN curse authorities.</p></a>
         <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FINALITY_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">FINALITY_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Finality validation across EVM and instant-finality chains.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/ENCODING_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">ENCODING_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">MessageV1 codecs, extraArgs parsing &amp; EVM/cross-VM parity.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/LANE_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">LANE_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Source/dest selector enablement, sequence &amp; curse gates.</p></a>
       </div>
     </section>
 
@@ -386,22 +402,22 @@
               <td class="py-2.5 text-[var(--muted-foreground)]">Quorum check, releaseOrMint &amp; gas-buffered callback</td>
             </tr>
             <tr>
-              <td class="py-2.5 pr-4 font-medium">Modular CCVs</td>
-              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/tree/main/chains/evm/contracts/ccvs" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">contracts/ccvs/</a></td>
-              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L85" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">Committee#L85</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L160" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">SuccinctZK#L160</a></td>
-              <td class="py-2.5 text-[var(--muted-foreground)]">Pluggable DON, SP1 ZK, CCTP &amp; Lombard verification</td>
+              <td class="py-2.5 pr-4 font-medium">Modular CCVs &amp; Resolver</td>
+              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">VersionedVerifierResolver.sol</a></td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol#L54" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">Resolver#L54</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L85" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">Committee#L85</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L160" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">SuccinctZK#L160</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">Versioned CCV routing, DON quorum, SP1 ZK, CCTP &amp; Lombard</td>
             </tr>
             <tr>
-              <td class="py-2.5 pr-4 font-medium">Token Pools</td>
+              <td class="py-2.5 pr-4 font-medium">Token Admin &amp; Pools</td>
               <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">pools/TokenPool.sol</a></td>
-              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L40" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">TokenPool#L40</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/test/attacks/OnRamp/OnRampTokenPoolReentrancy.t.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">ReentrancyTest</a></td>
-              <td class="py-2.5 text-[var(--muted-foreground)]">Custody, rate limits &amp; pool-mandated CCVs</td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol#L64" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">getPool#L64</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L40" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">TokenPool#L40</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">Custody registry, rate limits &amp; pool-mandated CCVs</td>
             </tr>
             <tr>
               <td class="py-2.5 pr-4 font-medium">RMN &amp; OCR3 Go</td>
               <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/docs/ccip_protocol.md" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">docs/ccip_protocol.md</a></td>
-              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L39" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">RMN.curse#L39</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/plugin.go" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">commit/plugin.go</a></td>
-              <td class="py-2.5 text-[var(--muted-foreground)]">BFT Commit/Execute plugins &amp; emergency curse veto</td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L39" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">RMN.curse#L39</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMNProxy.sol#L13" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">RMNProxy#L13</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/plugin.go" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">commit/plugin.go</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">BFT Commit/Execute Role DON &amp; emergency curse veto</td>
             </tr>
           </tbody>
         </table>
@@ -415,8 +431,8 @@
       offramp: {
         title: "OffRamp.sol",
         badge: "Destination Execution Core",
-        summary: "Permissionless destination execution contract. Enforces CCV quorum validity strictly before calling TokenPool releaseOrMint, then delivers messages to Router/CCIPReceiver inside a gas-buffered try/catch frame.",
-        connections: ["committee", "zk", "bridges", "execute", "rmn", "router", "pools", "invariants"],
+        summary: "Permissionless destination execution contract. Resolves inbound CCV implementations via VersionedVerifierResolver, enforces CCV quorum validity strictly before calling TokenPool releaseOrMint, then delivers messages to Router/CCIPReceiver inside a gas-buffered try/catch frame.",
+        connections: ["execute", "rmn", "resolver", "committee", "zk", "bridges", "pools", "router"],
         links: [
           { label: "OffRamp.sol (contract)", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L27" },
           { label: "OffRamp.execute", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L188" },
@@ -434,7 +450,7 @@
         title: "Router.sol",
         badge: "User-Facing Entry & Receiver Bridge",
         summary: "Canonical user entry point (getFee / ccipSend) routing outbound sends to configured OnRamps and inbound callbacks via routeMessage to CCIPReceiver contracts.",
-        connections: ["onramp", "offramp", "fee", "rmn"],
+        connections: ["onramp", "offramp", "fee"],
         links: [
           { label: "Router.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/Router.sol#L24" },
           { label: "Router.ccipSend", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/Router.sol#L112" },
@@ -448,8 +464,8 @@
       onramp: {
         title: "OnRamp.sol",
         badge: "Source Chain Dispatcher",
-        summary: "Validates destination addresses, merges user/pool/default/lane-mandated CCVs, distributes fees to FeeQuoter/Executor/CCVs, locks or burns tokens via TokenPools, and emits CCIPMessageSent.",
-        connections: ["router", "pools", "fee", "commit", "invariants"],
+        summary: "Validates destination addresses, merges user/pool/default/lane-mandated CCVs, queries VersionedVerifierResolver outbound implementations, distributes fees to FeeQuoter/Executor/CCVs, locks or burns tokens via TokenPools, and emits CCIPMessageSent.",
+        connections: ["router", "pools", "fee", "commit", "resolver"],
         links: [
           { label: "OnRamp.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L31" },
           { label: "OnRamp.forwardFromRouter", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L206" },
@@ -463,11 +479,13 @@
         ]
       },
       pools: {
-        title: "TokenPool.sol & Variants",
-        badge: "BurnMint / LockRelease / MultiTokenPool",
-        summary: "Handles asset custody on source/dest chains with configurable rate limits, allowlists, advanced hooks, and per-token mandatory CCV requirements via IPoolV2.",
-        connections: ["onramp", "offramp", "rmn", "invariants"],
+        title: "TokenAdminRegistry & TokenPool",
+        badge: "Custody & Per-Token CCVs",
+        summary: "TokenAdminRegistry resolves canonical per-token pools; TokenPool handles BurnMint, LockRelease, and MultiTokenPool custody with rate limits, RMN curse checks, and mandatory IPoolV2.getRequiredCCVs.",
+        connections: ["onramp", "offramp", "rmn"],
         links: [
+          { label: "TokenAdminRegistry.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol#L16" },
+          { label: "TokenAdminRegistry.getPool", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/tokenAdminRegistry/TokenAdminRegistry.sol#L64" },
           { label: "TokenPool.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L40" },
           { label: "TokenPool.setDynamicConfig", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L235" },
           { label: "OnRampTokenPoolReentrancy.t.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/test/attacks/OnRamp/OnRampTokenPoolReentrancy.t.sol" }
@@ -485,6 +503,7 @@
         links: [
           { label: "FeeQuoter.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/FeeQuoter.sol#L26" },
           { label: "FeeQuoter.quoteGasForExec", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/FeeQuoter.sol#L301" },
+          { label: "Executor.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/executor/Executor.sol#L15" },
           { label: "Executor.getFee", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/executor/Executor.sol#L202" }
         ],
         invariants: [
@@ -496,7 +515,7 @@
         title: "OCR3 Commit Plugin (Go)",
         badge: "Off-Chain libOCR3 Commit DON",
         summary: "Observes finalized source messages, generates per-source Merkle roots, queries the RMN network off-chain to bundle RMN signatures, and outputs CommitReports with gas/token prices.",
-        connections: ["onramp", "rmn", "committee", "execute"],
+        connections: ["onramp", "rmn", "execute", "committee"],
         links: [
           { label: "docs/ccip_protocol.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/docs/ccip_protocol.md" },
           { label: "commit/plugin.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/plugin.go" },
@@ -526,39 +545,40 @@
       rmn: {
         title: "RMN.sol & RMNProxy.sol",
         badge: "Risk Management Network",
-        summary: "Independent verification & emergency halt network. Blesses CommitReports (verified via isBlessed) and supports global or chain-specific curses (isCursed) to freeze risky lanes or pools.",
-        connections: ["commit", "offramp", "pools", "router"],
+        summary: "Independent verification & emergency halt network. Blesses CommitReports (verified via isBlessed) and supports global or chain-specific curses (isCursed) to freeze risky lanes, OffRamps, or TokenPools.",
+        connections: ["commit", "offramp", "pools"],
         links: [
           { label: "RMN.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L16" },
           { label: "RMN.curse", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L39" },
-          { label: "RMN.isBlessed", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L133" }
+          { label: "RMN.isBlessed", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L133" },
+          { label: "RMNProxy.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMNProxy.sol#L13" }
         ],
         invariants: [
           "Cursed chain subjects immediately block affected commits & token pools",
           "RMN blessing verification is domain-separated by config digest"
         ]
       },
-      invariants: {
-        title: "chains/evm/contracts/invariants/",
-        badge: "9 Protocol Invariant Suites",
-        summary: "Explicitly documented protocol invariants covering CCV selection, authorization, encoding, fees, finality, lanes, message lifecycle, and token pool custody.",
-        connections: ["onramp", "offramp", "pools", "committee"],
+      resolver: {
+        title: "VersionedVerifierResolver.sol",
+        badge: "Pluggable CCV Dispatch & Versioning",
+        summary: "Maps destChainSelector outbound to active CCV versions on source, and parses the 4-byte verifier version prefix from verifierResults on destination so OffRamp invokes the exact matching ICrossChainVerifierV1 implementation.",
+        connections: ["onramp", "offramp", "committee", "zk", "bridges"],
         links: [
-          { label: "CONTEXT.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CONTEXT.md" },
-          { label: "CCV_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" },
-          { label: "MESSAGE_LIFECYCLE_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/MESSAGE_LIFECYCLE_INVARIANTS.md" },
-          { label: "TOKEN_POOL_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/TOKEN_POOL_INVARIANTS.md" }
+          { label: "VersionedVerifierResolver.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol#L15" },
+          { label: "getInboundImplementation#L54", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol#L54" },
+          { label: "getOutboundImplementation#L75", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol#L75" },
+          { label: "CCV_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" }
         ],
         invariants: [
-          "Our methodology turns each INV-* ID into bytecode Halmos/CVL rules",
-          "Checks Go codec parity & unseen AdversarialCCV extensions"
+          "Inbound verification uses the exact verifier version bound on source",
+          "Zero-address implementation reverts via InboundImplementationNotFound"
         ]
       },
       committee: {
         title: "CommitteeVerifier.sol",
         badge: "DON Committee CCV",
         summary: "Default CCV verifying DON signature quorums, storage location metadata, allowlists, and finality requirements via SignatureQuorumValidator.",
-        connections: ["commit", "offramp", "invariants"],
+        connections: ["commit", "resolver", "offramp"],
         links: [
           { label: "CommitteeVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L24" },
           { label: "forwardToVerifier#L68", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L68" },
@@ -573,7 +593,7 @@
         title: "SuccinctZKVerifier.sol",
         badge: "SP1 Helios ZK Light-Client CCV",
         summary: "Validates ZK proofs (via ISP1Helios) of source-chain header hashes and event logs, caching proven block hashes across multi-block gaps.",
-        connections: ["offramp"],
+        connections: ["resolver", "offramp"],
         links: [
           { label: "SuccinctZKVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L24" },
           { label: "verifyMessage#L160", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L160" },
@@ -588,11 +608,12 @@
         title: "CCTPVerifier.sol & LombardVerifier.sol",
         badge: "Native Asset Bridge CCVs",
         summary: "Specialized verifiers integrating native Circle CCTP attestations and Lombard BTC bridge proofs directly into OffRamp's unified ICrossChainVerifierV1 quorum flow.",
-        connections: ["offramp"],
+        connections: ["resolver", "offramp"],
         links: [
-          { label: "CCTPVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CCTPVerifier.sol" },
-          { label: "LombardVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/LombardVerifier.sol" },
-          { label: "VersionedVerifierResolver.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol" }
+          { label: "CCTPVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CCTPVerifier.sol#L22" },
+          { label: "CCTP.verifyMessage#L307", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CCTPVerifier.sol#L307" },
+          { label: "LombardVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/LombardVerifier.sol#L19" },
+          { label: "Lombard.verifyMessage#L248", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/LombardVerifier.sol#L248" }
         ],
         invariants: [
           "Unified ICrossChainVerifierV1 contract prevents bridge-specific bypasses",
@@ -602,17 +623,35 @@
     };
 
     const EDGES = [
-      ["router", "onramp"], ["onramp", "pools"], ["onramp", "fee"], ["router", "fee"],
-      ["onramp", "commit"], ["commit", "rmn"], ["commit", "committee"], ["commit", "execute"],
-      ["execute", "offramp"], ["committee", "offramp"], ["zk", "offramp"], ["bridges", "offramp"],
-      ["rmn", "offramp"], ["rmn", "pools"], ["offramp", "pools"], ["offramp", "router"],
-      ["invariants", "onramp"], ["invariants", "offramp"]
+      { from: "router", to: "onramp", type: "flow", stage: "send", route: "h-adj" },
+      { from: "onramp", to: "pools", type: "flow", stage: "send", route: "h-adj" },
+      { from: "onramp", to: "fee", type: "flow", stage: "send", route: "top-arch" },
+      { from: "router", to: "fee", type: "flow", stage: "send", route: "top-arch-hi" },
+      { from: "onramp", to: "resolver", type: "ccv", stage: "send", route: "v-cross" },
+
+      { from: "onramp", to: "commit", type: "flow", stage: "consensus", route: "v-cross" },
+      { from: "commit", to: "execute", type: "flow", stage: "consensus", route: "h-adj" },
+      { from: "rmn", to: "commit", type: "rmn", stage: "consensus", route: "mid-arch" },
+      { from: "rmn", to: "pools", type: "rmn", stage: "consensus", route: "v-straight" },
+      { from: "rmn", to: "offramp", type: "rmn", stage: "consensus", route: "v-cross" },
+      { from: "commit", to: "committee", type: "ccv", stage: "consensus", route: "v-straight" },
+
+      { from: "execute", to: "offramp", type: "flow", stage: "execute", route: "v-straight" },
+      { from: "offramp", to: "resolver", type: "ccv", stage: "execute", route: "v-cross" },
+      { from: "resolver", to: "zk", type: "ccv", stage: "execute", route: "v-cross" },
+      { from: "resolver", to: "bridges", type: "ccv", stage: "execute", route: "v-straight" },
+      { from: "committee", to: "offramp", type: "ccv", stage: "execute", route: "h-adj" },
+      { from: "zk", to: "offramp", type: "ccv", stage: "execute", route: "h-adj" },
+      { from: "bridges", to: "offramp", type: "ccv", stage: "execute", route: "bot-arch" },
+      { from: "offramp", to: "pools", type: "flow", stage: "execute", route: "gutter-2" },
+      { from: "offramp", to: "router", type: "flow", stage: "execute", route: "gutter-0" }
     ];
 
     let selectedId = "offramp";
+    let activeFlow = null; // "send" | "consensus" | "execute" | "all" | null (when node selected)
 
     function renderInspector(nodeId) {
-      const data = NODES[nodeId];
+      const data = NODES[nodeId] || NODES.offramp;
       const panel = document.getElementById("inspectorPanel");
       panel.innerHTML = `
         <div class="flex items-start justify-between gap-2 border-b border-[var(--border)] pb-3">
@@ -645,55 +684,182 @@
       `;
     }
 
-    function drawEdges(highlightId) {
+    function boxMetrics(el, rect) {
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - rect.left,
+        right: r.right - rect.left,
+        top: r.top - rect.top,
+        bottom: r.bottom - rect.top,
+        cx: r.left - rect.left + r.width / 2,
+        cy: r.top - rect.top + r.height / 2,
+        w: r.width,
+        h: r.height
+      };
+    }
+
+    function routeEdgePath(edge, bA, bB, idx) {
+      const pad = 2;
+      const sameRow = Math.abs(bA.cy - bB.cy) < 28;
+      if (sameRow && edge.route === "h-adj") {
+        const goRight = bA.cx < bB.cx;
+        const x1 = goRight ? bA.right + pad : bA.left - pad;
+        const x2 = goRight ? bB.left - pad : bB.right + pad;
+        return `M ${x1} ${bA.cy} L ${x2} ${bB.cy}`;
+      }
+      if (sameRow && (edge.route === "top-arch" || edge.route === "top-arch-hi")) {
+        const y1 = bA.bottom + pad;
+        const y2 = bB.bottom + pad;
+        const drop = edge.route === "top-arch-hi" ? 18 : 11;
+        const archY = Math.max(y1, y2) + drop;
+        const x1 = bA.cx + (bA.cx < bB.cx ? 10 : -10);
+        const x2 = bB.cx + (bB.cx < bA.cx ? 10 : -10);
+        return `M ${x1} ${y1} C ${x1} ${archY}, ${x2} ${archY}, ${x2} ${y2}`;
+      }
+      if (sameRow && edge.route === "mid-arch") {
+        const y1 = bA.bottom + pad;
+        const y2 = bB.bottom + pad;
+        const archY = Math.max(y1, y2) + 13;
+        return `M ${bA.cx + 10} ${y1} C ${bA.cx + 10} ${archY}, ${bB.cx - 10} ${archY}, ${bB.cx - 10} ${y2}`;
+      }
+      if (sameRow && edge.route === "bot-arch") {
+        const y1 = bA.bottom + pad;
+        const y2 = bB.bottom + pad;
+        const archY = Math.max(y1, y2) + 14;
+        return `M ${bA.cx} ${y1} C ${bA.cx} ${archY}, ${bB.cx} ${archY}, ${bB.cx} ${y2}`;
+      }
+      if (edge.route === "gutter-0" || edge.route === "gutter-2") {
+        const refLeft = document.querySelector(`[data-node="${edge.route === 'gutter-0' ? 'commit' : 'execute'}"]`);
+        const refRight = document.querySelector(`[data-node="${edge.route === 'gutter-0' ? 'execute' : 'rmn'}"]`);
+        const down = bA.cy < bB.cy;
+        const y1 = down ? bA.bottom + pad : bA.top - pad;
+        const y2 = down ? bB.top - pad : bB.bottom + pad;
+        if (refLeft && refRight) {
+          const stageRect = document.getElementById("diagramStage").getBoundingClientRect();
+          const mL = boxMetrics(refLeft, stageRect);
+          const mR = boxMetrics(refRight, stageRect);
+          if (Math.abs(mL.cy - mR.cy) < 28) {
+            const gx = (mL.right + mR.left) / 2;
+            const gTop = Math.min(mL.top, mR.top) - 6;
+            const gBot = Math.max(mL.bottom, mR.bottom) + 6;
+            const yMidA = down ? gTop : gBot;
+            const yMidB = down ? gBot : gTop;
+            const x1 = bA.cx + (gx > bA.cx ? 14 : -14);
+            const x2 = bB.cx + (gx > bB.cx ? 14 : -14);
+            return `M ${x1} ${y1} Q ${gx} ${y1}, ${gx} ${yMidA} L ${gx} ${yMidB} Q ${gx} ${y2}, ${x2} ${y2}`;
+          }
+        }
+      }
+      const down = bA.cy < bB.cy;
+      const y1 = down ? bA.bottom + pad : bA.top - pad;
+      const y2 = down ? bB.top - pad : bB.bottom + pad;
+      const nudge = ((idx % 3) - 1) * 7;
+      const x1 = bA.cx + nudge;
+      const x2 = bB.cx - nudge;
+      const midY = (y1 + y2) / 2;
+      return `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+    }
+
+    function colorForEdge(type) {
+      if (type === "ccv") return "var(--chart-6)";
+      if (type === "rmn") return "var(--error)";
+      return "var(--chart-1)";
+    }
+
+    function drawEdges() {
       const stage = document.getElementById("diagramStage");
       const svg = document.getElementById("edgeOverlay");
       const rect = stage.getBoundingClientRect();
       svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
-      svg.innerHTML = "";
 
-      const connectedSet = new Set(highlightId ? [highlightId, ...(NODES[highlightId]?.connections || [])] : []);
+      const defs = `
+        <defs>
+          <marker id="arr-flow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--chart-1)" />
+          </marker>
+          <marker id="arr-ccv" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--chart-6)" />
+          </marker>
+          <marker id="arr-rmn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--error)" />
+          </marker>
+          <marker id="arr-dim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="var(--border)" />
+          </marker>
+        </defs>
+      `;
+      svg.innerHTML = defs;
+
+      const activeSet = new Set();
+      let activeCount = 0;
+
+      const edgeStates = EDGES.map(edge => {
+        let active = false;
+        if (activeFlow === "all") active = true;
+        else if (activeFlow) active = edge.stage === activeFlow;
+        else if (selectedId) active = edge.from === selectedId || edge.to === selectedId;
+        if (active) {
+          activeCount++;
+          activeSet.add(edge.from);
+          activeSet.add(edge.to);
+        }
+        return { edge, active };
+      });
+
+      document.querySelectorAll(".flow-btn").forEach(b => {
+        b.classList.toggle("is-active", b.dataset.flow === activeFlow);
+      });
+
       document.querySelectorAll(".node-card").forEach(card => {
         const id = card.dataset.node;
-        card.classList.toggle("is-selected", id === highlightId);
-        card.classList.toggle("is-dimmed", Boolean(highlightId) && !connectedSet.has(id));
+        const isSel = !activeFlow && id === selectedId;
+        const dim = activeFlow === "all" ? false : (activeSet.size > 0 && !activeSet.has(id));
+        card.classList.toggle("is-selected", isSel);
+        card.classList.toggle("is-dimmed", dim);
       });
 
-      EDGES.forEach(([a, b]) => {
-        const elA = document.querySelector(`[data-node="${a}"]`);
-        const elB = document.querySelector(`[data-node="${b}"]`);
+      // Draw dimmed background edges first, active foreground edges last
+      const ordered = [...edgeStates.filter(e => !e.active), ...edgeStates.filter(e => e.active)];
+      ordered.forEach(({ edge, active }, idx) => {
+        const elA = document.querySelector(`[data-node="${edge.from}"]`);
+        const elB = document.querySelector(`[data-node="${edge.to}"]`);
         if (!elA || !elB) return;
-        const rA = elA.getBoundingClientRect();
-        const rB = elB.getBoundingClientRect();
-        const x1 = rA.left - rect.left + rA.width / 2;
-        const y1 = rA.top - rect.top + rA.height / 2;
-        const x2 = rB.left - rect.left + rB.width / 2;
-        const y2 = rB.top - rect.top + rB.height / 2;
-        const isActive = !highlightId || a === highlightId || b === highlightId;
+        const bA = boxMetrics(elA, rect);
+        const bB = boxMetrics(elB, rect);
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        const midY = (y1 + y2) / 2;
-        path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+        path.setAttribute("d", routeEdgePath(edge, bA, bB, idx));
         path.setAttribute("fill", "none");
         path.setAttribute("class", "edge-line");
-        path.setAttribute("stroke", isActive && highlightId ? "var(--primary)" : "var(--border)");
-        path.setAttribute("stroke-width", isActive && highlightId ? "2" : "1.2");
-        path.setAttribute("opacity", isActive ? "0.9" : "0.2");
+        if (edge.type === "rmn") path.setAttribute("stroke-dasharray", "4 3");
+        path.setAttribute("stroke", active ? colorForEdge(edge.type) : "var(--border)");
+        path.setAttribute("stroke-width", active ? "2" : "1");
+        path.setAttribute("opacity", active ? "0.92" : "0.14");
+        path.setAttribute("marker-end", active ? `url(#arr-${edge.type})` : "url(#arr-dim)");
         svg.appendChild(path);
       });
+
+      const statusEl = document.getElementById("edgeStatusNote");
+      if (statusEl) {
+        statusEl.textContent = activeFlow
+          ? `${activeFlow.toUpperCase()} (${activeCount} edges)`
+          : `${NODES[selectedId]?.title.split(" ")[0] || "Node"} (${activeCount} edges)`;
+      }
     }
 
     document.querySelectorAll(".node-card").forEach(card => {
       card.addEventListener("click", () => {
+        activeFlow = null;
         selectedId = card.dataset.node;
         renderInspector(selectedId);
-        drawEdges(selectedId);
+        drawEdges();
       });
     });
 
-    document.getElementById("resetFilterBtn").addEventListener("click", () => {
-      selectedId = null;
-      document.querySelectorAll(".node-card").forEach(c => c.classList.remove("is-selected", "is-dimmed"));
-      drawEdges(null);
+    document.querySelectorAll(".flow-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeFlow = btn.dataset.flow;
+        drawEdges();
+      });
     });
 
     // Tabs
@@ -723,7 +889,6 @@
       if (poolCctp) add("CCTPVerifier (pool)");
       if (mandated) add("CommitteeVerifier (mandated)");
 
-      // Deduplicate CommitteeVerifier if both default and mandated appear
       const dedup = [];
       const seen = new Set();
       list.forEach(item => {
@@ -750,9 +915,9 @@
 
     renderInspector(selectedId);
     updateCcvSim();
-    requestAnimationFrame(() => drawEdges(selectedId));
-    window.addEventListener("resize", () => drawEdges(selectedId));
-    window.addEventListener("themechange", () => drawEdges(selectedId));
+    requestAnimationFrame(() => drawEdges());
+    window.addEventListener("resize", drawEdges);
+    window.addEventListener("themechange", drawEdges);
   </script>
 </body>
 </html>
