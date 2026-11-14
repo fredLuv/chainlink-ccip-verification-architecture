@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chainlink CCIP Architecture — Interactive Explorer &amp; Code Map</title>
+  <meta name="description" content="Clickable Chainlink CCIP architecture explorer covering Source OnRamp &amp; TokenPools, Go OCR3 Commit/Execute plugins, RMN, modular CCVs (Committee, Succinct SP1 ZK, CCTP, Lombard), OffRamp, and line-verified invariant links." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Chainlink CCIP Architecture — Interactive Explorer &amp; Verification Methodology" />
+  <meta property="og:description" content="Clickable cross-chain architecture map with verified Solidity &amp; Go links to smartcontractkit/chainlink-ccip and a 5-stratum verification methodology." />
+  <meta property="og:url" content="https://fredluv.github.io/chainlink-ccip-verification-architecture/" />
+  <meta property="og:image" content="https://fredluv.github.io/chainlink-ccip-verification-architecture/preview.png" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="920" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Chainlink CCIP Architecture — Interactive Explorer &amp; Code Map" />
+  <meta name="twitter:description" content="Interactive CCIP cross-chain topology, _mergeCCVLists simulator, and verified GitHub source links." />
+  <meta name="twitter:image" content="https://fredluv.github.io/chainlink-ccip-verification-architecture/preview.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --content: #f1f5f9;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --foreground: #0f172a;
+      --muted-foreground: #475569;
+      --code-foreground: #0f172a;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --link: #1d4ed8;
+      --success: #16a34a;
+      --warning: #d97706;
+      --error: #dc2626;
+      --chart-1: #2563eb;
+      --chart-2: #7c3aed;
+      --chart-3: #d97706;
+      --chart-4: #0d9488;
+      --chart-5: #db2777;
+      --chart-6: #4f46e5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0b1120;
+        --content: #111827;
+        --card: #162032;
+        --border: #263248;
+        --foreground: #f1f5f9;
+        --muted-foreground: #94a3b8;
+        --code-foreground: #e2e8f0;
+        --primary: #60a5fa;
+        --primary-foreground: #0b1120;
+        --link: #93c5fd;
+        --success: #4ade80;
+        --warning: #fbbf24;
+        --error: #f87171;
+        --chart-1: #60a5fa;
+        --chart-2: #a78bfa;
+        --chart-3: #fbbf24;
+        --chart-4: #2dd4bf;
+        --chart-5: #f472b6;
+        --chart-6: #818cf8;
+      }
+    }
+    .node-card {
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+    }
+    .node-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+    .node-card.is-selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent);
+    }
+    .node-card.is-dimmed {
+      opacity: 0.45;
+    }
+    .tab-btn.is-active {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      border-color: var(--primary);
+    }
+    svg path.edge-line {
+      transition: stroke 0.16s ease, stroke-width 0.16s ease, opacity 0.16s ease;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Minimal Essential Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="space-y-1.5">
+        <h1 class="text-2xl font-bold tracking-tight">Chainlink CCIP Architecture &amp; Interactive Code Map</h1>
+        <p class="text-sm text-[var(--muted-foreground)] max-w-2xl">
+          Click any component below to trace cross-chain call boundaries, inspect invariants, and open verified Solidity &amp; Go source lines.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-xs shrink-0">
+        <a href="https://github.com/smartcontractkit/chainlink-ccip" target="_blank" rel="noopener noreferrer"
+           class="px-3.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)] font-medium">
+          smartcontractkit/chainlink-ccip ↗
+        </a>
+        <a href="https://github.com/fredLuv/chainlink-ccip-verification-architecture/blob/main/methodology.md" target="_blank" rel="noopener noreferrer"
+           class="px-3.5 py-2 rounded-lg border border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 font-medium">
+          Verification Methodology ↗
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Interactive Grid: Clickable Topology + Inspector -->
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+
+      <!-- Left: Clickable Layered Architecture Diagram -->
+      <div class="xl:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 space-y-4">
+        <div class="flex items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+          <div>
+            <h2 class="text-base font-semibold">Interactive Cross-Chain &amp; OCR3 Topology</h2>
+            <p class="text-xs text-[var(--muted-foreground)]">Select any node to trace dependencies, read invariants, and jump to upstream code.</p>
+          </div>
+          <button id="resetFilterBtn" type="button"
+                  class="text-xs px-2.5 py-1.5 rounded-md border border-[var(--border)] bg-[var(--content)] hover:border-[var(--primary)] shrink-0">
+            Show All Edges
+          </button>
+        </div>
+
+        <div id="diagramStage" class="relative space-y-5 p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] overflow-hidden">
+          <svg id="edgeOverlay" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></svg>
+
+          <!-- Layer 1: Source Chain Custody & Fee Quoting -->
+          <div class="relative z-10 space-y-2">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              1. Source Chain Entry, Custody &amp; Quoting (EVM)
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="router">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">Router.sol</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded bg-[var(--content)] text-[var(--muted-foreground)] shrink-0">Entry</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">ccipSend &amp; dest-side routeMessage to receivers.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="onramp">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">OnRamp.sol</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-1)">Source</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Validates dest, merges CCVs, assigns seq &amp; messageId.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="pools">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">TokenPool.sol</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-4)">Custody</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">LockRelease, BurnMint &amp; MultiTokenPool + RateLimiter.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="fee">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">FeeQuoter / Exec</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-3)">Billing</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Gas/token price quotes &amp; destination execution budget.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layer 2: Off-Chain OCR3 DON & Risk Management -->
+          <div class="relative z-10 space-y-2">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              2. Off-Chain Consensus (Go OCR3 Role DON) &amp; RMN Security
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="commit">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">OCR3 Commit</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-2)">Go Plugin</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Collects messages, builds Merkle roots &amp; RMN sigs.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="execute">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">OCR3 Execute</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-2)">Go Plugin</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Multi-round Role DON merklemulti proofs &amp; ordering.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="rmn">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">RMN &amp; RMNProxy</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--error)">Veto / Curse</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Independent blessing check &amp; global/lane circuit-breaker.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="invariants">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">Invariants Specs</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-5)">9 Docs</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Formal rules for CCVs, lanes, lifecycle &amp; pools.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trust & Verification Seam -->
+          <div class="relative z-10 text-center py-1.5 px-3 rounded-md border border-dashed border-[var(--border)] bg-[var(--background)] text-xs text-[var(--muted-foreground)] font-mono">
+            Pluggable Verification Seam: <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">ICrossChainVerifierV1</a> (Quorum Verified &rarr; releaseOrMint &rarr; ccipReceive)
+          </div>
+
+          <!-- Layer 3: Modular CCVs & Destination Execution -->
+          <div class="relative z-10 space-y-2">
+            <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+              3. Modular Cross-Chain Verifiers (CCVs) &amp; Destination Ramp
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="node-card is-selected rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="offramp">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">OffRamp.sol</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--success)">Dest Core</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Permissionless execute, CCV quorum, token release &amp; gas buffer.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="committee">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">CommitteeVerifier</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-1)">CCV DON</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Verifies DON signature quorum &amp; lane finality configs.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="zk">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">SuccinctZKVerifier</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-6)">SP1 Helios</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">ZK light-client block hashes &amp; storage proof log check.</p>
+              </div>
+              <div class="node-card rounded-lg border border-[var(--border)] bg-[var(--card)] p-3" data-node="bridges">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <span class="text-xs font-semibold">CCTP &amp; Lombard</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded border border-[var(--border)] shrink-0" style="color: var(--chart-4)">Native CCV</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] mt-1">Specialized verifiers for USDC CCTP &amp; Lombard BTC.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Dynamic Component Inspector -->
+      <aside id="inspectorPanel" class="xl:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 space-y-4">
+        <!-- Populated by JS -->
+      </aside>
+
+    </section>
+
+    <!-- Core Mechanics Interactive Walkthroughs -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-[var(--border)] pb-3">
+        <div>
+          <h2 class="text-lg font-semibold">Core Protocol Mechanics (Interactive Walkthroughs)</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Explore CCIP's modular CCV composition, Go OCR3 consensus pipeline, OffRamp guards, and formal invariant specs.</p>
+        </div>
+        <div class="flex flex-wrap gap-2" role="tablist">
+          <button class="tab-btn is-active text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] font-medium" data-tab="ccv-merge">CCV Composition</button>
+          <button class="tab-btn text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] font-medium" data-tab="ocr3">OCR3 Role DON</button>
+          <button class="tab-btn text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] font-medium" data-tab="execution">OffRamp Guards</button>
+          <button class="tab-btn text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] font-medium" data-tab="invariants-tab">9 Invariant Docs</button>
+        </div>
+      </div>
+
+      <!-- Tab 1: CCV Set Merging Simulator -->
+      <div id="tab-ccv-merge" class="tab-panel grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div class="lg:col-span-7 space-y-3 text-sm">
+          <h3 class="font-semibold text-base">Source CCV Selection &amp; Deduplication (<code class="font-mono text-sm">OnRamp._mergeCCVLists</code>)</h3>
+          <p class="text-[var(--muted-foreground)]">
+            Every cross-chain message collects verifiers from four layers: <strong>user-requested CCVs</strong> (with <code class="font-mono text-xs">address(0)</code> as the "include defaults" sentinel), <strong>token pool requirements</strong> (<code class="font-mono text-xs">IPoolV2.getRequiredCCVs</code>), <strong>lane defaults</strong>, and non-overridable <strong>lane-mandated CCVs</strong>.
+          </p>
+          <ul class="list-disc pl-5 space-y-1.5 text-xs text-[var(--muted-foreground)]">
+            <li><strong>Token-only exception:</strong> Pure token transfers (no receiver data, <code class="font-mono">gasLimit = 0</code>) skip default CCVs unless the user explicitly passes <code class="font-mono">address(0)</code>—using only pool-required + lane-mandated CCVs (<code class="font-mono">INV-SRC-4 / INV-SRC-6</code>).</li>
+            <li><strong>Custom <code class="font-mono">ccvArgs</code> precedence:</strong> If a user manually specifies a lane-mandated CCV with custom <code class="font-mono">ccvArgs</code>, deduplication keeps the user entry's args (<code class="font-mono">INV-SRC-10</code>).</li>
+          </ul>
+          <div class="flex flex-wrap gap-3 text-xs">
+            <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L411" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">OnRamp._mergeCCVLists#L411 ↗</a>
+            <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">CCV_INVARIANTS.md ↗</a>
+          </div>
+        </div>
+        <div class="lg:col-span-5 bg-[var(--content)] border border-[var(--border)] rounded-lg p-4 space-y-3 text-xs">
+          <div class="font-semibold">Interactive <code class="font-mono">_mergeCCVLists</code> Simulator</div>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="simTokenOnly" type="checkbox" class="accent-[var(--primary)]" />
+              <span>Token-only transfer (no data, <code class="font-mono">gasLimit = 0</code>)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="simUserZero" type="checkbox" checked class="accent-[var(--primary)]" />
+              <span>User passes <code class="font-mono">address(0)</code> default sentinel</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="simUserZk" type="checkbox" class="accent-[var(--primary)]" />
+              <span>User explicitly adds <code class="font-mono">SuccinctZKVerifier</code></span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="simPoolCctp" type="checkbox" checked class="accent-[var(--primary)]" />
+              <span>Pool requires <code class="font-mono">CCTPVerifier</code></span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="simMandatedRmn" type="checkbox" checked class="accent-[var(--primary)]" />
+              <span>Lane mandates <code class="font-mono">CommitteeVerifier</code></span>
+            </label>
+          </div>
+          <div class="border-t border-[var(--border)] pt-2.5 space-y-1.5">
+            <div class="text-[var(--muted-foreground)]">Merged, Deduplicated Active CCVs:</div>
+            <div id="mergedCcvOut" class="flex flex-wrap gap-1.5"></div>
+            <p id="mergedCcvNote" class="text-[var(--muted-foreground)] pt-1"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: OCR3 Role DON -->
+      <div id="tab-ocr3" class="tab-panel hidden grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="p-4 rounded-lg bg-[var(--content)] border border-[var(--border)] space-y-2">
+          <div class="text-sm font-semibold">Phase 1: Commit Plugin (<a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/plugin.go" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">commit/plugin.go</a>)</div>
+          <p class="text-[var(--muted-foreground)]">Observes finalized source-chain messages, generates per-source Merkle roots, queries the <strong>RMN network directly off-chain</strong> so RMN signatures ride inside the initial <code class="font-mono">CommitReport</code>, and attaches gas/token price snapshots for billing.</p>
+        </div>
+        <div class="p-4 rounded-lg bg-[var(--content)] border border-[var(--border)] space-y-2">
+          <div class="text-sm font-semibold">Phase 2: Execute Plugin (<a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/execute/plugin.go" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">execute/plugin.go</a>)</div>
+          <p class="text-[var(--muted-foreground)]">Multi-round Role DON pipeline: (1) Destination readers scan pending CommitReports, (2) Source readers fetch matching payloads, (3) Destination readers compute <code class="font-mono">merklemulti</code> proofs and execution order, then submit to <code class="font-mono">OffRamp.execute</code>.</p>
+        </div>
+      </div>
+
+      <!-- Tab 3: OffRamp Execution Guards -->
+      <div id="tab-execution" class="tab-panel hidden grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div class="p-4 rounded-lg bg-[var(--content)] border border-[var(--border)] space-y-1.5">
+          <div class="font-semibold text-sm">1. Strict Order of Effects</div>
+          <p class="text-[var(--muted-foreground)]"><code class="font-mono">INV-DST-1 / 2</code>: CCV quorum passes before any token release (<code class="font-mono">releaseOrMint</code>), and token release finishes before calling <code class="font-mono">ccipReceive</code>.</p>
+        </div>
+        <div class="p-4 rounded-lg bg-[var(--content)] border border-[var(--border)] space-y-1.5">
+          <div class="font-semibold text-sm">2. Out-of-Order &amp; Replay Safety</div>
+          <p class="text-[var(--muted-foreground)]"><code class="font-mono">INV-EXEC-2 / 4 / 6</code>: Execution is permissionless and unordered; <code class="font-mono">SUCCESS</code> is final, while <code class="font-mono">FAILED</code> messages may be retried without double-minting.</p>
+        </div>
+        <div class="p-4 rounded-lg bg-[var(--content)] border border-[var(--border)] space-y-1.5">
+          <div class="font-semibold text-sm">3. Gas-Buffer Isolation</div>
+          <p class="text-[var(--muted-foreground)]"><code class="font-mono">_callWithGasBuffer</code> reserves safe gas to record failure states cleanly if an untrusted <code class="font-mono">CCIPReceiver</code> burns all forwarded gas.</p>
+        </div>
+      </div>
+
+      <!-- Tab 4: 9 Invariant Docs -->
+      <div id="tab-invariants-tab" class="tab-panel hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">CCV_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Config deduplication, sentinels, quorum &amp; verifier rules.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/MESSAGE_LIFECYCLE_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">MESSAGE_LIFECYCLE_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Send ordering, gas budgets, retries &amp; SUCCESS semantics.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/TOKEN_POOL_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">TOKEN_POOL_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Custody conservation, rate limits &amp; pool ACLs.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FEE_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">FEE_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">FeeQuoter budgets, receipts &amp; fee distribution.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/AUTHORIZATION_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">AUTHORIZATION_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">OnRamp/OffRamp ownership &amp; RMN curse authorities.</p></a>
+        <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FINALITY_INVARIANTS.md" target="_blank" rel="noopener noreferrer" class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] block"><div class="font-mono font-semibold text-[var(--link)]">FINALITY_INVARIANTS.md ↗</div><p class="text-[var(--muted-foreground)] mt-1">Finality validation across EVM and instant-finality chains.</p></a>
+      </div>
+    </section>
+
+    <!-- Verified Repository Code Map -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-base font-semibold">Verified Chainlink CCIP Source &amp; Spec Index</h2>
+        <span class="text-xs text-[var(--muted-foreground)]">Line-verified against <code class="font-mono">smartcontractkit/chainlink-ccip@main</code></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+              <th class="py-2 pr-4 font-semibold">Layer</th>
+              <th class="py-2 pr-4 font-semibold">Source File (Clickable)</th>
+              <th class="py-2 pr-4 font-semibold">Key Symbols / Line Targets</th>
+              <th class="py-2 font-semibold">Role</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)]">
+            <tr>
+              <td class="py-2.5 pr-4 font-medium">Router &amp; OnRamp</td>
+              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">onRamp/OnRamp.sol</a></td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/Router.sol#L112" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">Router.ccipSend#L112</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L411" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">_mergeCCVLists#L411</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">Message validation, CCV merging &amp; sequence locks</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4 font-medium">OffRamp</td>
+              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">offRamp/OffRamp.sol</a></td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L188" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">execute#L188</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L308" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">executeSingleMessage#L308</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">Quorum check, releaseOrMint &amp; gas-buffered callback</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4 font-medium">Modular CCVs</td>
+              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/tree/main/chains/evm/contracts/ccvs" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">contracts/ccvs/</a></td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L85" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">Committee#L85</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L160" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">SuccinctZK#L160</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">Pluggable DON, SP1 ZK, CCTP &amp; Lombard verification</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4 font-medium">Token Pools</td>
+              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">pools/TokenPool.sol</a></td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L40" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">TokenPool#L40</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/test/attacks/OnRamp/OnRampTokenPoolReentrancy.t.sol" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">ReentrancyTest</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">Custody, rate limits &amp; pool-mandated CCVs</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4 font-medium">RMN &amp; OCR3 Go</td>
+              <td class="py-2.5 pr-4"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/docs/ccip_protocol.md" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)] font-mono">docs/ccip_protocol.md</a></td>
+              <td class="py-2.5 pr-4 font-mono"><a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L39" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">RMN.curse#L39</a>, <a href="https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/plugin.go" target="_blank" rel="noopener noreferrer" class="underline text-[var(--link)]">commit/plugin.go</a></td>
+              <td class="py-2.5 text-[var(--muted-foreground)]">BFT Commit/Execute plugins &amp; emergency curse veto</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const NODES = {
+      offramp: {
+        title: "OffRamp.sol",
+        badge: "Destination Execution Core",
+        summary: "Permissionless destination execution contract. Enforces CCV quorum validity strictly before calling TokenPool releaseOrMint, then delivers messages to Router/CCIPReceiver inside a gas-buffered try/catch frame.",
+        connections: ["committee", "zk", "bridges", "execute", "rmn", "router", "pools", "invariants"],
+        links: [
+          { label: "OffRamp.sol (contract)", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L27" },
+          { label: "OffRamp.execute", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L188" },
+          { label: "OffRamp.executeSingleMessage", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L308" },
+          { label: "OffRamp._callWithGasBuffer", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/offRamp/OffRamp.sol#L268" },
+          { label: "OffRamp.ensureCCVQuorumIsReached.t.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/test/offRamp/OffRamp/OffRamp.ensureCCVQuorumIsReached.t.sol" }
+        ],
+        invariants: [
+          "INV-DST-1: CCV quorum verified strictly before token release",
+          "INV-DST-2: releaseOrMint executes before ccipReceive callback",
+          "INV-EXEC-6: SUCCESS execution state prevents any replay"
+        ]
+      },
+      router: {
+        title: "Router.sol",
+        badge: "User-Facing Entry & Receiver Bridge",
+        summary: "Canonical user entry point (getFee / ccipSend) routing outbound sends to configured OnRamps and inbound callbacks via routeMessage to CCIPReceiver contracts.",
+        connections: ["onramp", "offramp", "fee", "rmn"],
+        links: [
+          { label: "Router.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/Router.sol#L24" },
+          { label: "Router.ccipSend", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/Router.sol#L112" },
+          { label: "Router.routeMessage", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/Router.sol#L160" }
+        ],
+        invariants: [
+          "INV-RECV-1: Only configured OffRamps can trigger ccipReceive via Router",
+          "INV-RECV-2: ccipReceive skipped for token-only transfers"
+        ]
+      },
+      onramp: {
+        title: "OnRamp.sol",
+        badge: "Source Chain Dispatcher",
+        summary: "Validates destination addresses, merges user/pool/default/lane-mandated CCVs, distributes fees to FeeQuoter/Executor/CCVs, locks or burns tokens via TokenPools, and emits CCIPMessageSent.",
+        connections: ["router", "pools", "fee", "commit", "invariants"],
+        links: [
+          { label: "OnRamp.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L31" },
+          { label: "OnRamp.forwardFromRouter", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L206" },
+          { label: "OnRamp._mergeCCVLists", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L411" },
+          { label: "OnRamp._parseExtraArgsWithDefaults", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/onRamp/OnRamp.sol#L515" }
+        ],
+        invariants: [
+          "INV-SRC-2: messageId computed strictly after lockOrBurn",
+          "INV-SRC-6: Sequence number mutated atomically / prior to finalization",
+          "INV-CFG-1: Zero total CCVs on a lane is forbidden"
+        ]
+      },
+      pools: {
+        title: "TokenPool.sol & Variants",
+        badge: "BurnMint / LockRelease / MultiTokenPool",
+        summary: "Handles asset custody on source/dest chains with configurable rate limits, allowlists, advanced hooks, and per-token mandatory CCV requirements via IPoolV2.",
+        connections: ["onramp", "offramp", "rmn", "invariants"],
+        links: [
+          { label: "TokenPool.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L40" },
+          { label: "TokenPool.setDynamicConfig", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/pools/TokenPool.sol#L235" },
+          { label: "OnRampTokenPoolReentrancy.t.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/test/attacks/OnRamp/OnRampTokenPoolReentrancy.t.sol" }
+        ],
+        invariants: [
+          "Pool checks RMN curse state via RMNProxy before locking/releasing",
+          "Custom pool-required CCVs cannot bypass lane-mandated CCVs"
+        ]
+      },
+      fee: {
+        title: "FeeQuoter.sol & Executor.sol",
+        badge: "Billing & Destination Gas Budgets",
+        summary: "Maintains validated token prices, destination gas prices, token transfer fee configs, and Executor CCV limits/quotes so executionGasLimit covers every verifier receipt.",
+        connections: ["router", "onramp"],
+        links: [
+          { label: "FeeQuoter.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/FeeQuoter.sol#L26" },
+          { label: "FeeQuoter.quoteGasForExec", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/FeeQuoter.sol#L301" },
+          { label: "Executor.getFee", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/executor/Executor.sol#L202" }
+        ],
+        invariants: [
+          "INV-SRC-3: Computed fee never exceeds caller-supplied fee token amount",
+          "INV-SRC-5: executionGasLimit covers base + CCVs + pool + user gas"
+        ]
+      },
+      commit: {
+        title: "OCR3 Commit Plugin (Go)",
+        badge: "Off-Chain libOCR3 Commit DON",
+        summary: "Observes finalized source messages, generates per-source Merkle roots, queries the RMN network off-chain to bundle RMN signatures, and outputs CommitReports with gas/token prices.",
+        connections: ["onramp", "rmn", "committee", "execute"],
+        links: [
+          { label: "docs/ccip_protocol.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/docs/ccip_protocol.md" },
+          { label: "commit/plugin.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/plugin.go" },
+          { label: "commit/validate_observation.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/validate_observation.go" },
+          { label: "commit/report.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/commit/report.go" }
+        ],
+        invariants: [
+          "Finality gates ensure only finalized source messages enter Merkle roots",
+          "Observation validation rejects malformed or inconsistent source claims"
+        ]
+      },
+      execute: {
+        title: "OCR3 Execute Plugin (Go)",
+        badge: "Off-Chain libOCR3 Role DON",
+        summary: "Runs multi-round consensus: destination readers detect CommitReports, source readers fetch matching message payloads, and destination readers build merklemulti execution proofs.",
+        connections: ["commit", "offramp"],
+        links: [
+          { label: "execute/plugin.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/execute/plugin.go" },
+          { label: "execute/observation.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/execute/observation.go" },
+          { label: "execute/outcome.go", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/execute/outcome.go" }
+        ],
+        invariants: [
+          "Only messages backed by valid CommitReports and RMN blessing advance",
+          "Execution reports carry deterministic merklemulti inclusion proofs"
+        ]
+      },
+      rmn: {
+        title: "RMN.sol & RMNProxy.sol",
+        badge: "Risk Management Network",
+        summary: "Independent verification & emergency halt network. Blesses CommitReports (verified via isBlessed) and supports global or chain-specific curses (isCursed) to freeze risky lanes or pools.",
+        connections: ["commit", "offramp", "pools", "router"],
+        links: [
+          { label: "RMN.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L16" },
+          { label: "RMN.curse", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L39" },
+          { label: "RMN.isBlessed", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/rmn/RMN.sol#L133" }
+        ],
+        invariants: [
+          "Cursed chain subjects immediately block affected commits & token pools",
+          "RMN blessing verification is domain-separated by config digest"
+        ]
+      },
+      invariants: {
+        title: "chains/evm/contracts/invariants/",
+        badge: "9 Protocol Invariant Suites",
+        summary: "Explicitly documented protocol invariants covering CCV selection, authorization, encoding, fees, finality, lanes, message lifecycle, and token pool custody.",
+        connections: ["onramp", "offramp", "pools", "committee"],
+        links: [
+          { label: "CONTEXT.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CONTEXT.md" },
+          { label: "CCV_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/CCV_INVARIANTS.md" },
+          { label: "MESSAGE_LIFECYCLE_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/MESSAGE_LIFECYCLE_INVARIANTS.md" },
+          { label: "TOKEN_POOL_INVARIANTS.md", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/TOKEN_POOL_INVARIANTS.md" }
+        ],
+        invariants: [
+          "Our methodology turns each INV-* ID into bytecode Halmos/CVL rules",
+          "Checks Go codec parity & unseen AdversarialCCV extensions"
+        ]
+      },
+      committee: {
+        title: "CommitteeVerifier.sol",
+        badge: "DON Committee CCV",
+        summary: "Default CCV verifying DON signature quorums, storage location metadata, allowlists, and finality requirements via SignatureQuorumValidator.",
+        connections: ["commit", "offramp", "invariants"],
+        links: [
+          { label: "CommitteeVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L24" },
+          { label: "forwardToVerifier#L68", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L68" },
+          { label: "verifyMessage#L85", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CommitteeVerifier.sol#L85" }
+        ],
+        invariants: [
+          "Domain separator prevents cross-chain signature replay",
+          "Unique signer threshold enforced by SignatureQuorumValidator"
+        ]
+      },
+      zk: {
+        title: "SuccinctZKVerifier.sol",
+        badge: "SP1 Helios ZK Light-Client CCV",
+        summary: "Validates ZK proofs (via ISP1Helios) of source-chain header hashes and event logs, caching proven block hashes across multi-block gaps.",
+        connections: ["offramp"],
+        links: [
+          { label: "SuccinctZKVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L24" },
+          { label: "verifyMessage#L160", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L160" },
+          { label: "proveBlockHash#L198", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/SuccinctZKVerifier.sol#L198" }
+        ],
+        invariants: [
+          "Only logs anchored to SP1-proven source headers pass verifyMessage",
+          "Compressed in Stratum 2 via Assume-Guarantee summary oracle"
+        ]
+      },
+      bridges: {
+        title: "CCTPVerifier.sol & LombardVerifier.sol",
+        badge: "Native Asset Bridge CCVs",
+        summary: "Specialized verifiers integrating native Circle CCTP attestations and Lombard BTC bridge proofs directly into OffRamp's unified ICrossChainVerifierV1 quorum flow.",
+        connections: ["offramp"],
+        links: [
+          { label: "CCTPVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/CCTPVerifier.sol" },
+          { label: "LombardVerifier.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/LombardVerifier.sol" },
+          { label: "VersionedVerifierResolver.sol", url: "https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/ccvs/VersionedVerifierResolver.sol" }
+        ],
+        invariants: [
+          "Unified ICrossChainVerifierV1 contract prevents bridge-specific bypasses",
+          "Tested against synthetic AdversarialCCV injections in Stratum 4"
+        ]
+      }
+    };
+
+    const EDGES = [
+      ["router", "onramp"], ["onramp", "pools"], ["onramp", "fee"], ["router", "fee"],
+      ["onramp", "commit"], ["commit", "rmn"], ["commit", "committee"], ["commit", "execute"],
+      ["execute", "offramp"], ["committee", "offramp"], ["zk", "offramp"], ["bridges", "offramp"],
+      ["rmn", "offramp"], ["rmn", "pools"], ["offramp", "pools"], ["offramp", "router"],
+      ["invariants", "onramp"], ["invariants", "offramp"]
+    ];
+
+    let selectedId = "offramp";
+
+    function renderInspector(nodeId) {
+      const data = NODES[nodeId];
+      const panel = document.getElementById("inspectorPanel");
+      panel.innerHTML = `
+        <div class="flex items-start justify-between gap-2 border-b border-[var(--border)] pb-3">
+          <div>
+            <span class="text-xs font-medium px-2 py-0.5 rounded bg-[var(--content)] text-[var(--primary)] border border-[var(--border)]">${data.badge}</span>
+            <h3 class="text-lg font-bold mt-2">${data.title}</h3>
+          </div>
+        </div>
+        <p class="text-sm text-[var(--muted-foreground)] leading-relaxed">${data.summary}</p>
+        <div class="space-y-2">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Workable GitHub Source Links</div>
+          <div class="flex flex-col gap-1.5">
+            ${data.links.map(l => `
+              <a href="${l.url}" target="_blank" rel="noopener noreferrer"
+                 class="flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--content)] border border-[var(--border)] hover:border-[var(--primary)] text-xs font-mono text-[var(--link)]">
+                <span>${l.label}</span>
+                <span>↗</span>
+              </a>
+            `).join("")}
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Critical Invariants &amp; Guarantees</div>
+          <ul class="space-y-1.5 text-xs">
+            ${data.invariants.map(inv => `
+              <li class="px-3 py-2 rounded-md bg-[var(--content)] border border-[var(--border)] text-[var(--foreground)] font-mono">${inv}</li>
+            `).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    function drawEdges(highlightId) {
+      const stage = document.getElementById("diagramStage");
+      const svg = document.getElementById("edgeOverlay");
+      const rect = stage.getBoundingClientRect();
+      svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+      svg.innerHTML = "";
+
+      const connectedSet = new Set(highlightId ? [highlightId, ...(NODES[highlightId]?.connections || [])] : []);
+      document.querySelectorAll(".node-card").forEach(card => {
+        const id = card.dataset.node;
+        card.classList.toggle("is-selected", id === highlightId);
+        card.classList.toggle("is-dimmed", Boolean(highlightId) && !connectedSet.has(id));
+      });
+
+      EDGES.forEach(([a, b]) => {
+        const elA = document.querySelector(`[data-node="${a}"]`);
+        const elB = document.querySelector(`[data-node="${b}"]`);
+        if (!elA || !elB) return;
+        const rA = elA.getBoundingClientRect();
+        const rB = elB.getBoundingClientRect();
+        const x1 = rA.left - rect.left + rA.width / 2;
+        const y1 = rA.top - rect.top + rA.height / 2;
+        const x2 = rB.left - rect.left + rB.width / 2;
+        const y2 = rB.top - rect.top + rB.height / 2;
+        const isActive = !highlightId || a === highlightId || b === highlightId;
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const midY = (y1 + y2) / 2;
+        path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+        path.setAttribute("fill", "none");
+        path.setAttribute("class", "edge-line");
+        path.setAttribute("stroke", isActive && highlightId ? "var(--primary)" : "var(--border)");
+        path.setAttribute("stroke-width", isActive && highlightId ? "2" : "1.2");
+        path.setAttribute("opacity", isActive ? "0.9" : "0.2");
+        svg.appendChild(path);
+      });
+    }
+
+    document.querySelectorAll(".node-card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectedId = card.dataset.node;
+        renderInspector(selectedId);
+        drawEdges(selectedId);
+      });
+    });
+
+    document.getElementById("resetFilterBtn").addEventListener("click", () => {
+      selectedId = null;
+      document.querySelectorAll(".node-card").forEach(c => c.classList.remove("is-selected", "is-dimmed"));
+      drawEdges(null);
+    });
+
+    // Tabs
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("is-active", b === btn));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("hidden", p.id !== `tab-${target}`));
+      });
+    });
+
+    // Interactive CCV Merge Simulator
+    function updateCcvSim() {
+      const tokenOnly = document.getElementById("simTokenOnly").checked;
+      const userZero = document.getElementById("simUserZero").checked;
+      const userZk = document.getElementById("simUserZk").checked;
+      const poolCctp = document.getElementById("simPoolCctp").checked;
+      const mandated = document.getElementById("simMandatedRmn").checked;
+
+      const list = [];
+      const add = (name) => { if (!list.includes(name)) list.push(name); };
+
+      const defaults = ["CommitteeVerifier (default)"];
+      if (userZero) defaults.forEach(add);
+      if (userZk) add("SuccinctZKVerifier (userArgs)");
+      if (!userZero && !userZk && !tokenOnly) defaults.forEach(add);
+      if (poolCctp) add("CCTPVerifier (pool)");
+      if (mandated) add("CommitteeVerifier (mandated)");
+
+      // Deduplicate CommitteeVerifier if both default and mandated appear
+      const dedup = [];
+      const seen = new Set();
+      list.forEach(item => {
+        const base = item.split(" ")[0];
+        if (!seen.has(base)) {
+          seen.add(base);
+          dedup.push(item);
+        }
+      });
+
+      const out = document.getElementById("mergedCcvOut");
+      const note = document.getElementById("mergedCcvNote");
+      out.innerHTML = dedup.length
+        ? dedup.map(c => `<span class="px-2 py-1 rounded bg-[var(--card)] border border-[var(--border)] font-mono">${c}</span>`).join("")
+        : `<span class="text-[var(--error)] font-mono">INVALID: zero total CCVs (blocked by INV-CFG-1)</span>`;
+
+      note.textContent = tokenOnly && !userZero && !userZk
+        ? "Token-only mode skipped defaultCCVs per INV-SRC-4/6; only pool-required + lane-mandated CCVs apply."
+        : "Expanded address(0) defaults and deduplicated overlapping lane/pool CCVs per INV-SRC-7..13.";
+    }
+    ["simTokenOnly", "simUserZero", "simUserZk", "simPoolCctp", "simMandatedRmn"].forEach(id => {
+      document.getElementById(id).addEventListener("change", updateCcvSim);
+    });
+
+    renderInspector(selectedId);
+    updateCcvSim();
+    requestAnimationFrame(() => drawEdges(selectedId));
+    window.addEventListener("resize", () => drawEdges(selectedId));
+    window.addEventListener("themechange", () => drawEdges(selectedId));
+  </script>
+</body>
+</html>
